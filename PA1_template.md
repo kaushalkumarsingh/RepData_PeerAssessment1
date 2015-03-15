@@ -133,8 +133,8 @@ updatedMeanSteps <- mean(updatedCountOfStepsDayWise$CountOfSteps)
 ## calculate median of steps
 updatedMedianSteps <- median(updatedCountOfStepsDayWise$CountOfSteps)
 ```
-With NAs replaced **Mean** total number of steps taken = **1.0766189\times 10^{4}**
-With NAs replaced **Median** total number of steps taken = **1.0766189\times 10^{4}**
+With NAs replaced **Mean** total number of steps taken = **10766.19**
+With NAs replaced **Median** total number of steps taken = **10766.19**
 Do these values differ from the estimates from the first part of the assignment?
 **Yes**
 What is the impact of imputing missing data on the estimates of the total daily number of steps?
