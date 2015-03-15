@@ -1,27 +1,46 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 Code to read the data
-```{r}
+
+```r
 options(gsubfn.engine = "R")
 library(sqldf)
+```
+
+```
+## Loading required package: gsubfn
+## Loading required package: proto
+## Loading required package: RSQLite
+## Loading required package: DBI
+```
+
+```r
 activityData <- read.csv.sql("./activity.csv", sql="select * from file")
+```
+
+```
+## Warning: closing unused connection 5 (./activity.csv)
+```
+
+```r
 baseData <- activityData
 ```
 Transform activity data
-```{r}
+
+```r
 activityData$steps <- as.numeric(activityData$steps)
+```
+
+```
+## Warning: NAs introduced by coercion
 ```
 
 ## What is mean total number of steps taken per day?
 calculate value of total steps for dates
-```{r}
+
+```r
 countOfStepsDayWise <- aggregate(activityData$steps, 
                                  FUN= sum, 
                                  by=list(activityData$date),
@@ -33,19 +52,25 @@ hist(countOfStepsDayWise$CountOfSteps,
      main = "Total Number Of Steps Taken Each Day",
      xlab = "Number of steps", 
      col = "red")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
+```r
 ## caluclate mean of steps
 meanSteps <- mean(countOfStepsDayWise$CountOfSteps)
 ## calculate median of steps
 medianSteps <- median(countOfStepsDayWise$CountOfSteps)
 ```
 
-**Mean** of total number of steps taken per day =  **`r format(meanSteps,scientific=FALSE)`**
+**Mean** of total number of steps taken per day =  **9354.23**
 
-**Median** of total number of steps taken per day = **`r format(medianSteps,scientific=FALSE)`**
+**Median** of total number of steps taken per day = **10395**
 
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 meanStepsFor5MinInterval <- aggregate(activityData$steps, 
                                  FUN= mean, 
                                  by=list(activityData$interval),
@@ -59,19 +84,25 @@ ggplot(meanStepsFor5MinInterval, aes(x=intervals, y=meanSteps))+
         xlab("5 min Intervals")+
         ylab("Mean Steps")+
         geom_line(colour="#0000CC")
-maxInterval <- sqldf("select max(meanSteps) as maxMean, intervals from meanStepsFor5MinInterval")
-        
 ```
-**5 minute Interval** having **maximum** mean steps = **`r maxInterval[1, "intervals"] `** and has mean steps = **`r maxInterval[1, "maxMean"] `**
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+```r
+maxInterval <- sqldf("select max(meanSteps) as maxMean, intervals from meanStepsFor5MinInterval")
+```
+**5 minute Interval** having **maximum** mean steps = **835** and has mean steps = **206.1698113**
 
 ## Imputing missing values
-```{r}
+
+```r
 missingValues <- sqldf("select count(steps) as missingValue from baseData where steps is \"NA\"")
 ```
-Total number of **missing** values = **`r missingValues[1, "missingValue"]`**
+Total number of **missing** values = **2304**
 
 Replace NAs with mean steps
-```{r}
+
+```r
 noOfRows <- dim(meanStepsFor5MinInterval)[1]
 for(ctr in 1:noOfRows) {
         activityData$steps[is.na(activityData$steps) & 
@@ -79,7 +110,8 @@ for(ctr in 1:noOfRows) {
 }
 ```
 Plot histogram with replaced values
-```{r}
+
+```r
 updatedCountOfStepsDayWise <- aggregate(activityData$steps, 
                                  FUN= sum, 
                                  by=list(activityData$date),
@@ -91,20 +123,26 @@ hist(countOfStepsDayWise$CountOfSteps,
      main = "Total Number Of Steps Taken Each Day with NA replaced",
      xlab = "Number of steps", 
      col = "blue")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
+```r
 ## caluclate mean of steps
 updatedMeanSteps <- mean(updatedCountOfStepsDayWise$CountOfSteps)
 ## calculate median of steps
 updatedMedianSteps <- median(updatedCountOfStepsDayWise$CountOfSteps)
 ```
-With NAs replaced **Mean** total number of steps taken = **`r updatedMeanSteps `**
-With NAs replaced **Median** total number of steps taken = **`r updatedMedianSteps `**
+With NAs replaced **Mean** total number of steps taken = **1.0766189\times 10^{4}**
+With NAs replaced **Median** total number of steps taken = **1.0766189\times 10^{4}**
 Do these values differ from the estimates from the first part of the assignment?
 **Yes**
 What is the impact of imputing missing data on the estimates of the total daily number of steps?
 **Mean and median have increased and converged in values**
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 activityData$date<-as.character(activityData$date)
 activityData$date <- as.Date(activityData$date, format = "\"%Y-%m-%d\"")
 activityData$weekDay <- weekdays(activityData$date) 
@@ -135,4 +173,6 @@ ggplot(meanStepsMerged,aes(x=intervals, y=meanSteps,group=weekDay))+
         facet_wrap(~weekDay,nrow=2)+
         geom_line(colour="#0000CC")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 **Yes activity patterns differ on weekdays and weekends**
